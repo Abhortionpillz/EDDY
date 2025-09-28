@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin - Add Product</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    #product-section { display: none; } /* hidden until password is correct */
+    form { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Admin Login</h1>
+
+  <!-- Login Section -->
+  <div id="login-section">
+    <input type="password" id="admin-pass" placeholder="Enter Password">
+    <button onclick="checkPassword()">Login</button>
+  </div>
+
+  <!-- Product Add Section -->
+  <div id="product-section">
+    <h2>Add a Product</h2>
+    <form id="product-form">
+      <input type="text" id="name" placeholder="Product Name" required><br><br>
+      <input type="number" id="price" placeholder="Price" required><br><br>
+      <input type="file" id="image" accept="image/*" required><br><br>
+      <button type="submit">Add Product</button>
+    </form>
+  </div>
+
+  <script>
+    const ADMIN_PASSWORD = "mySecret123"; // <-- change this for your client
+
+    function checkPassword() {
+      let entered = document.getElementById("admin-pass").value;
+      if (entered === ADMIN_PASSWORD) {
+        document.getElementById("login-section").style.display = "none";
+        document.getElementById("product-section").style.display = "block";
+      } else {
+        alert("Wrong password! Access denied.");
+      }
+    }
+
+    document.getElementById("product-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      let name = document.getElementById("name").value;
+      let price = document.getElementById("price").value;
+      let imageFile = document.getElementById("image").files[0];
+
+      if (!imageFile) {
+        alert("Please upload an image!");
+        return;
+      }
+
+      let reader = new FileReader();
+      reader.onload = function(event) {
+        let products = JSON.parse(localStorage.getItem("products")) || [];
+        let newProduct = {
+          name: name,
+          price: price,
+          image: event.target.result // Base64 image string
+        };
+        products.push(newProduct);
+        localStorage.setItem("products", JSON.stringify(products));
+        alert("Product added! Go to Products page to see it.");
+        e.target.reset();
+      };
+
+      reader.readAsDataURL(imageFile);
+    });
+  </script>
+</body>
+</html>
