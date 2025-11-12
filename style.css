@@ -127,3 +127,21 @@ a{
   font-size: 13px;
   color: #aaa;
 }
+@media (min-width: 360px) {
+  body {
+    font-size: 12px;
+    display: flex;
+    text-align: center;
+     padding: 0rem;
+  }
+}
+
+/* Tablet */
+@media (min-width: 768px) {
+  body {
+    font-size: 18px;
+  }
+  form{
+    flex-direction:row;
+  }
+}
