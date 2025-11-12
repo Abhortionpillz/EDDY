@@ -2,73 +2,128 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Admin - Add Product</title>
+  <title>Admin - Manage Products</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
-    #product-section { display: none; } /* hidden until password is correct */
-    form { margin-top: 20px; }
+    h1, h2 { color: #333; }
+    input, select, button { padding: 8px; margin-bottom: 10px; width: 250px; }
+    .product-card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 10px;
+      margin: 10px 0;
+      width: 250px;
+      display: inline-block;
+      vertical-align: top;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .product-card img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+    #product-list { margin-top: 20px; }
   </style>
 </head>
 <body>
   <h1>Admin Login</h1>
 
-  <!-- Login Section -->
   <div id="login-section">
     <input type="password" id="admin-pass" placeholder="Enter Password">
     <button onclick="checkPassword()">Login</button>
   </div>
 
-  <!-- Product Add Section -->
-  <div id="product-section">
+  <div id="admin-panel" style="display:none;">
     <h2>Add a Product</h2>
     <form id="product-form">
-      <input type="text" id="name" placeholder="Product Name" required><br><br>
-      <input type="number" id="price" placeholder="Price" required><br><br>
-      <input type="file" id="image" accept="image/*" required><br><br>
+      <input type="text" id="name" placeholder="Product Name" required><br>
+      <input type="number" id="price" placeholder="Price" required><br>
+         <input type="url" id="image" placeholder="Image Link (e.g. /images/item1.jpg)" required><br><br>
+
+
+      <select id="category" required>
+        <option value="">Select Category</option>
+        <option value="Fashion">Fashion</option>
+        <option value="Electronics">Electronics</option>
+        <option value="Beauty">Beauty</option>
+        <option value="Home">Home</option>
+        <option value="Others">Others</option>
+      </select><br>
+
+      <input type="text" id="custom-category" placeholder="Or type a new category"><br>
+
       <button type="submit">Add Product</button>
     </form>
+
+    <h2>Manage Products</h2>
+    <div id="product-list"></div>
   </div>
 
   <script>
-    const ADMIN_PASSWORD = "mySecret123"; // <-- change this for your client
+    const ADMIN_PASSWORD = "mySecret123";
 
     function checkPassword() {
-      let entered = document.getElementById("admin-pass").value;
+      const entered = document.getElementById("admin-pass").value;
       if (entered === ADMIN_PASSWORD) {
         document.getElementById("login-section").style.display = "none";
-        document.getElementById("product-section").style.display = "block";
+        document.getElementById("admin-panel").style.display = "block";
+        loadProducts();
       } else {
-        alert("Wrong password! Access denied.");
+        alert("❌ Wrong password!");
       }
     }
 
+    // Load products into admin dashboard
+    function loadProducts() {
+      const productList = document.getElementById("product-list");
+      productList.innerHTML = "";
+      const products = JSON.parse(localStorage.getItem("products")) || [];
+
+      products.forEach((p, index) => {
+        const div = document.createElement("div");
+        div.className = "product-card";
+        div.innerHTML = `
+          <img src="${p.image}" alt="${p.name}">
+          <h3>${p.name}</h3>
+          <p>₦${p.price}</p>
+          <small>${p.category}</small><br>
+          <button onclick="deleteProduct(${index})" style="background:red;color:white;border:none;padding:5px 10px;border-radius:4px;">Delete</button>
+        `;
+        productList.appendChild(div);
+      });
+    }
+
+    // Delete product from localStorage
+    function deleteProduct(index) {
+      if (confirm("Are you sure you want to delete this product?")) {
+        const products = JSON.parse(localStorage.getItem("products")) || [];
+        products.splice(index, 1);
+        localStorage.setItem("products", JSON.stringify(products));
+        loadProducts();
+        alert("🗑️ Product deleted successfully!");
+      }
+    }
+
+    // Add new product
     document.getElementById("product-form").addEventListener("submit", (e) => {
       e.preventDefault();
+      const name = document.getElementById("name").value;
+      const price = document.getElementById("price").value;
+      const image = document.getElementById("image").value;
+      const categorySelect = document.getElementById("category").value;
+      const customCategory = document.getElementById("custom-category").value;
+      const category = customCategory || categorySelect;
 
-      let name = document.getElementById("name").value;
-      let price = document.getElementById("price").value;
-      let imageFile = document.getElementById("image").files[0];
+      const products = JSON.parse(localStorage.getItem("products")) || [];
+      const newProduct = { name, price, image, category };
+      products.push(newProduct);
+      localStorage.setItem("products", JSON.stringify(products));
 
-      if (!imageFile) {
-        alert("Please upload an image!");
-        return;
-      }
-
-      let reader = new FileReader();
-      reader.onload = function(event) {
-        let products = JSON.parse(localStorage.getItem("products")) || [];
-        let newProduct = {
-          name: name,
-          price: price,
-          image: event.target.result // Base64 image string
-        };
-        products.push(newProduct);
-        localStorage.setItem("products", JSON.stringify(products));
-        alert("Product added! Go to Products page to see it.");
-        e.target.reset();
-      };
-
-      reader.readAsDataURL(imageFile);
+      e.target.reset();
+      loadProducts();
+      alert("✅ Product added successfully!");
     });
   </script>
 </body>

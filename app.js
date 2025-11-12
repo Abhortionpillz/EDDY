@@ -1,18 +1,54 @@
-// Replace with your client’s WhatsApp number (with country code, no + or leading zeros)
-const WHATSAPP_NUMBER = "2348012345678";
+const WHATSAPP_NUMBER = "2347035074453";
 
-let products = JSON.parse(localStorage.getItem("products")) || [];
-let productList = document.getElementById("product-list");
+const products = JSON.parse(localStorage.getItem("products")) || [];
+const productList = document.getElementById("product-list");
+const categoryFilter = document.getElementById("category-filter");
 
-products.forEach((p, index) => {
-  let div = document.createElement("div");
-  div.innerHTML = `
-    <h2>${p.name}</h2>
-    <p>₦${p.price}</p>
-    <img src="${p.image}" width="150"><br>
-    <a href="https://wa.me/${WHATSAPP_NUMBER}?text=Hello,%20I%20want%20to%20order:%20${encodeURIComponent(p.name)}%20for%20₦${p.price}" target="_blank">
-      <button>Place Order</button>
-    </a>
-  `;
-  productList.appendChild(div);
+// Populate category filter dynamically
+const categories = [...new Set(products.map(p => p.category))];
+categories.forEach(cat => {
+  const option = document.createElement("option");
+  option.value = cat;
+  option.textContent = cat;
+  categoryFilter.appendChild(option);
+});
+
+// Display products by selected category
+function displayProducts(category = "all") {
+  productList.innerHTML = "";
+
+  const filtered = category === "all"
+    ? products
+    : products.filter(p => p.category === category);
+
+  filtered.forEach(p => {
+    const message = `Hello! I want to order this product:
+🛍️ *${p.name}*
+💰 Price: ₦${p.price}
+📦 Category: ${p.category}
+📸 Image: ${p.image}`;
+
+    const whatsappLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+
+    const div = document.createElement("div");
+    div.innerHTML = `
+        <img src="${p.image}" width="150" alt="${p.name}">
+        <h3>${p.name}</h3>
+        <p>₦${p.price}</p>
+        <small>Category: ${p.category}</small><br>
+        <a href="${whatsappLink}" target="_blank">
+          <button>Order on WhatsApp</button>
+        </a>
+      </div>
+    `;
+    productList.appendChild(div);
+  });
+}
+
+// Initial load
+displayProducts();
+
+// Filter change event
+categoryFilter.addEventListener("change", (e) => {
+  displayProducts(e.target.value);
 });
