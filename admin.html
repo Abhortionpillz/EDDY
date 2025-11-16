@@ -164,12 +164,9 @@
       formData.append("file", file);
 
       // Upload to Vercel Blob API
-      const uploadBtn = e.target.querySelector("button[type='submit']");
-      uploadBtn.textContent = "Uploading...";
-      uploadBtn.disabled = true;
-
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
-      const data = await res.json();
+     import { neon } from '@netlify/neon';
+const sql = neon(); // automatically uses env NETLIFY_DATABASE_URL
+const [post] = await sql`SELECT * FROM posts WHERE id = ${postId}`;
 
       if (!data.url) {
         alert("❌ Upload failed!");
